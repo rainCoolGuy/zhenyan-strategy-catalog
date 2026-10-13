@@ -2,10 +2,10 @@
   "kdf": "PBKDF2",
   "hash": "SHA-256",
   "iterations": 600000,
-  "salt": "qpIU9ikebeiIFy4CL+rHrQ==",
+  "salt": "V510JtdwiOVn5V1GXwOTWg==",
   "verifier": {
-    "iv": "WVrZaH/rLHdgRYAa",
-    "ct": "8QMlL7IfRCjcudSo6KFmK6r4PFts8XEmq9BrPy2OAalouhudVQ=="
+    "iv": "CPpgom1EkNJ1ylHf",
+    "ct": "w+5UOHdv+zZZPIMVgThm5ipCdUzYj3RJWY3TOk2aLAU6CFY7Tw=="
   },
   "verifier_plain": "zhenyan-catalog-ok-v1",
   "algo": "AES-256-GCM",

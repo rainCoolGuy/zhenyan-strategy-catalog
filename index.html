@@ -7,8 +7,9 @@
 <title>真言门 · 需要密码</title>
 <style>
 :root { color-scheme: dark; }
-body { font-family: system-ui, sans-serif; margin: 0; min-height: 100vh;
-  display:flex; align-items:center; justify-content:center; background:#0f1115; color:#e8eaed; }
+html, body { margin: 0; min-height: 100vh; background:#0f1115; color:#e8eaed; }
+body { font-family: system-ui, sans-serif;
+  display:flex; align-items:center; justify-content:center; }
 .card { background:#1a1d24; border:1px solid #30343c; border-radius:12px; padding:1.5rem 1.75rem;
   width:min(400px, 92vw); box-shadow:0 8px 32px rgba(0,0,0,.35); }
 h1 { font-size:1.15rem; margin:0 0 .35rem; }
@@ -21,9 +22,31 @@ button { margin-top:.85rem; width:100%; padding:.7rem; border:0; border-radius:8
 button:disabled { opacity:.6; cursor:wait; }
 .err { color:#f28b82; font-size:.85rem; margin-top:.65rem; min-height:1.2em; }
 #content { display:none; }
+/* Hidden until we know session unlock failed — prevents password-form flash */
+#gate { display:none; }
+body.show-gate #gate { display:block; }
+#boot { display:none; color:#9aa0a6; font-size:.9rem; }
+body.booting #boot { display:block; }
+</style>
+<script>
+/* Sync: hide form / show boot if session token exists — before first paint of form */
+(function () {
+  try {
+    var k = "zhenyan_catalog_key_v1";
+    var p = "zhenyan_catalog_pw_v1";
+    var has = (sessionStorage.getItem(k) || localStorage.getItem(k) ||
+               sessionStorage.getItem(p) || localStorage.getItem(p));
+    if (has) document.documentElement.classList.add("zy-autounlock");
+  } catch (e) {}
+})();
+</script>
+<style>
+html.zy-autounlock #gate { display:none !important; }
+html.zy-autounlock body { /* keep dark blank while decrypting */ }
 </style>
 </head>
 <body>
+<div id="boot">正在解锁…</div>
 <div id="gate" class="card">
   <h1>真言门策略目录</h1>
   <p>此页已加密。请输入访问密码后继续。</p>
