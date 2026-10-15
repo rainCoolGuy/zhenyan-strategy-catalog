@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>真言门 · 需要密码</title>
+<style>
+:root { color-scheme: dark; }
+html, body { margin: 0; min-height: 100vh; background:#0f1115; color:#e8eaed; }
+body { font-family: system-ui, sans-serif;
+  display:flex; align-items:center; justify-content:center; }
+.card { background:#1a1d24; border:1px solid #30343c; border-radius:12px; padding:1.5rem 1.75rem;
+  width:min(400px, 92vw); box-shadow:0 8px 32px rgba(0,0,0,.35); }
+h1 { font-size:1.15rem; margin:0 0 .35rem; }
+p { color:#9aa0a6; font-size:.9rem; margin:0 0 1rem; }
+label { display:block; font-size:.85rem; margin-bottom:.35rem; color:#c4c7c5; }
+input[type=password] { width:100%; box-sizing:border-box; padding:.65rem .75rem; border-radius:8px;
+  border:1px solid #30343c; background:#0f1115; color:#e8eaed; font-size:1rem; }
+button { margin-top:.85rem; width:100%; padding:.7rem; border:0; border-radius:8px;
+  background:#8ab4f8; color:#0f1115; font-weight:600; font-size:.95rem; cursor:pointer; }
+button:disabled { opacity:.6; cursor:wait; }
+.err { color:#f28b82; font-size:.85rem; margin-top:.65rem; min-height:1.2em; }
+#content { display:none; }
+/* Hidden until we know session unlock failed — prevents password-form flash */
+#gate { display:none; }
+body.show-gate #gate { display:block; }
+#boot { display:none; color:#9aa0a6; font-size:.9rem; }
+body.booting #boot { display:block; }
+</style>
+<script>
+/* Sync: hide form / show boot if session token exists — before first paint of form */
+(function () {
+  try {
+    var k = "zhenyan_catalog_key_v1";
+    var p = "zhenyan_catalog_pw_v1";
+    var has = (sessionStorage.getItem(k) || localStorage.getItem(k) ||
+               sessionStorage.getItem(p) || localStorage.getItem(p));
+    if (has) document.documentElement.classList.add("zy-autounlock");
+  } catch (e) {}
+})();
+</script>
+<style>
+html.zy-autounlock #gate { display:none !important; }
+html.zy-autounlock body { /* keep dark blank while decrypting */ }
+</style>
+</head>
+<body>
+<div id="boot">正在解锁…</div>
+<div id="gate" class="card">
+  <h1>真言门策略目录</h1>
+  <p>此页已加密。请输入访问密码后继续。</p>
+  <form id="form" autocomplete="current-password">
+    <label for="pw">访问密码</label>
+    <input id="pw" name="password" type="password" required autofocus/>
+    <button type="submit" id="btn">进入</button>
+    <div class="err" id="err"></div>
+  </form>
+</div>
+<div id="content"></div>
+<script src="../../auth.js"></script>
+<script>
+ZhenyanAuth.bootGate({ encPath: "../../enc/strategies/vzo_break_30m_v1/SUMMARY.html.enc", pageTitle: "SUMMARY" });
+</script>
+</body>
+</html>
