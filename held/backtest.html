@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>held / 斜率门 · 回测</title>
+  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    :root {
+      --bg: #0f1419; --panel: #171d25; --border: #2a3441;
+      --text: #e7ecf3; --muted: #8b98a8; --hold: #59c2ff; --chip: #243041;
+      --buy: #3dd68c; --sell: #f07178;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body { font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+    .navbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+      border-bottom: 1px solid var(--border); background: #121820; flex-shrink: 0; }
+    .brand { font-weight: 700; }
+    .brand-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--hold); margin-right: 8px; }
+    .nav-spacer { flex: 1; }
+    .btn, a.btn { background: var(--chip); color: var(--text); border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 13px; text-decoration: none; }
+    .btn:hover, a.btn:hover { border-color: var(--hold); }
+    .btn.active { border-color: var(--hold); color: var(--hold); background: #1c2a3a; }
+    .wrap { flex: 1; min-height: 0; overflow: auto; padding: 16px; }
+    .panel { max-width: 960px; margin: 0 auto; background: var(--panel); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px; }
+    h1 { font-size: 20px; margin: 0 0 8px; }
+    .sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+    .ranges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    @media (max-width: 800px) { .metrics { grid-template-columns: repeat(2, 1fr); } }
+    .metric { background: var(--chip); border-radius: 10px; padding: 12px; }
+    .metric .lab { font-size: 11px; color: var(--muted); }
+    .metric .val { font-size: 18px; font-weight: 600; margin-top: 4px; }
+    .metric .val.up { color: var(--buy); }
+    .metric .val.dn { color: var(--sell); }
+    #eq-chart { height: 320px; width: 100%; margin-top: 16px; border-radius: 10px;
+      border: 1px solid var(--border); background: #121820; }
+    .note { margin-top: 16px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .err { color: var(--sell); }
+  
+    @media (max-width: 700px) {
+      .navbar { flex-wrap: wrap; gap: 8px; padding: 8px 10px; }
+      .brand { font-size: 14px; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .btn, a.btn { padding: 8px 12px; min-height: 36px; display: inline-flex; align-items: center; }
+      .wrap { padding: 10px; }
+      .panel, .doc { padding: 14px 14px 28px; border-radius: 10px; }
+      .metrics { grid-template-columns: repeat(2, 1fr) !important; }
+      #eq-chart { height: 240px !important; }
+      .doc { font-size: 13px; }
+      .doc table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="brand"><span class="brand-dot"></span>held / 斜率门 · 回测</div>
+    <div class="nav-spacer"></div>
+    <a class="btn" href="index.html">监控</a>
+    <a class="btn active" href="backtest.html">回测</a>
+    <a class="btn" href="playbook.html">手册</a>
+  </nav>
+  <div class="wrap">
+    <div class="panel">
+      <h1>历史回测</h1>
+      <div class="sub" id="sub">研究账本本金 2 万 · held + 宽度 5 日斜率门 · 不改信号数学</div>
+      <div class="ranges" id="ranges"></div>
+      <div class="metrics" id="metrics">
+        <div class="metric"><div class="lab">区间</div><div class="val" id="m-range">—</div></div>
+        <div class="metric"><div class="lab">年化 CAGR</div><div class="val" id="m-cagr">—</div></div>
+        <div class="metric"><div class="lab">最大回撤</div><div class="val" id="m-dd">—</div></div>
+        <div class="metric"><div class="lab">区间收益</div><div class="val" id="m-ret">—</div></div>
+      </div>
+      <div id="eq-chart"></div>
+      <p class="note" id="note">加载回测缓存中…</p>
+    </div>
+  </div>
+<script>
+const RANGES = [
+  { id: '1y', label: '近1年' },
+  { id: '3y', label: '近3年' },
+  { id: '5y', label: '近5年' },
+  { id: '10y', label: '近10年' },
+  { id: '20y', label: '近20年' },
+  { id: 'all', label: '全样本' },
+];
+let active = '20y';
+let DATA = null;
+let chart = null;
+let series = null;
+
+const box = document.getElementById('ranges');
+const chartEl = document.getElementById('eq-chart');
+
+function pct(x) {
+  if (x == null || Number.isNaN(x)) return '—';
+  const s = (x * 100).toFixed(2) + '%';
+  return (x > 0 ? '+' : '') + s;
+}
+function money(x) {
+  if (x == null || Number.isNaN(x)) return '—';
+  return Number(x).toLocaleString('zh-CN', { maximumFractionDigits: 0 });
+}
+function cls(x) {
+  if (x == null || Number.isNaN(x)) return '';
+  return x >= 0 ? 'up' : 'dn';
+}
+
+window.__fmtChartDate = function (time) {
+  if (time == null) return '';
+  if (typeof time === 'string') return time.slice(0, 10);
+  if (typeof time === 'object' && time.year != null) {
+    const m = String(time.month).padStart(2, '0');
+    const d = String(time.day).padStart(2, '0');
+    return `${time.year}-${m}-${d}`;
+  }
+  const n = Number(time);
+  if (!Number.isFinite(n)) return String(time);
+  const dt = new Date(n * 1000);
+  const y = dt.getUTCFullYear();
+  const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(dt.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+function ensureChart() {
+  if (chart || typeof LightweightCharts === 'undefined') return;
+  chart = LightweightCharts.createChart(chartEl, {
+    layout: { background: { color: '#121820' }, textColor: '#8b98a8' },
+    grid: { vertLines: { color: '#1c2530' }, horzLines: { color: '#1c2530' } },
+    rightPriceScale: { borderColor: '#2a3441' },
+    timeScale: {
+      borderColor: '#2a3441',
+      tickMarkFormatter: (time) => window.__fmtChartDate(time),
+    },
+    localization: {
+      locale: 'zh-CN',
+      dateFormat: 'yyyy-MM-dd',
+      timeFormatter: (time) => window.__fmtChartDate(time),
+    },
+    width: chartEl.clientWidth,
+    height: 320,
+  });
+  series = chart.addAreaSeries({
+    lineColor: '#59c2ff',
+    topColor: 'rgba(89,194,255,0.35)',
+    bottomColor: 'rgba(89,194,255,0.02)',
+    lineWidth: 2,
+  });
+  if (window.ResizeObserver) {
+    new ResizeObserver(() => {
+      chart.applyOptions({ width: chartEl.clientWidth });
+    }).observe(chartEl);
+  }
+}
+
+function equityForRange(rid) {
+  if (!DATA || !DATA.equity) return [];
+  const meta = (DATA.ranges || {})[rid];
+  if (!meta) return DATA.equity;
+  const start = meta.start;
+  return DATA.equity.filter(p => p.date >= start);
+}
+
+function drawEquity(rid) {
+  ensureChart();
+  if (!series) return;
+  const pts = equityForRange(rid).map(p => ({ time: p.date, value: p.equity }));
+  series.setData(pts);
+  if (chart && pts.length) chart.timeScale().fitContent();
+}
+
+function yearsSpan(start, end) {
+  if (!start || !end) return null;
+  const a = new Date(start + 'T00:00:00');
+  const b = new Date(end + 'T00:00:00');
+  return (b - a) / (365.25 * 24 * 3600 * 1000);
+}
+
+function applyRange(rid) {
+  active = rid;
+  const label = RANGES.find(x => x.id === rid).label;
+  const m = (DATA && DATA.ranges) ? DATA.ranges[rid] : null;
+  const cagrEl = document.getElementById('m-cagr');
+  const ddEl = document.getElementById('m-dd');
+  const retEl = document.getElementById('m-ret');
+  if (!m) {
+    document.getElementById('m-range').textContent = label;
+    cagrEl.textContent = ddEl.textContent = retEl.textContent = '—';
+    cagrEl.className = ddEl.className = retEl.className = 'val';
+    document.getElementById('note').textContent = '该区间无数据。';
+    renderButtons();
+    return;
+  }
+  // Show actual calendar span under the button label when shorter than requested.
+  const want = { '1y': 1, '3y': 3, '5y': 5, '10y': 10, '20y': 20 }[rid];
+  const span = yearsSpan(m.start, m.end);
+  let rangeText = `${m.start} → ${m.end}`;
+  if (want != null && span != null && span + 0.05 < want) {
+    rangeText = `${label}（实 ${span.toFixed(1)}年）\n${m.start} → ${m.end}`;
+  } else {
+    rangeText = `${label}\n${m.start} → ${m.end}`;
+  }
+  document.getElementById('m-range').textContent = rangeText;
+  document.getElementById('m-range').style.whiteSpace = 'pre-line';
+  document.getElementById('m-range').style.fontSize = '14px';
+  cagrEl.textContent = pct(m.cagr);
+  cagrEl.className = 'val ' + cls(m.cagr);
+  ddEl.textContent = m.maxdd == null ? '—' : ('-' + (m.maxdd * 100).toFixed(2) + '%');
+  ddEl.className = 'val dn';
+  retEl.textContent = pct(m.total_return);
+  retEl.className = 'val ' + cls(m.total_return);
+  drawEquity(rid);
+  const endEq = money(m.end_equity);
+  let shortNote = '';
+  if (want != null && span != null && span + 0.05 < want) {
+    shortNote = `（「${label}」样本实长 ${span.toFixed(1)} 年，不足 ${want} 年）· `;
+  }
+  document.getElementById('note').textContent =
+    `asof ${DATA.asof} · 研究本金 ${money(DATA.cash0)} · ${shortNote}区间 ${m.start} → ${m.end} · 期末权益 ${endEq} · ${DATA.note || ''}`;
+  renderButtons();
+}
+
+function renderButtons() {
+  box.innerHTML = RANGES.map(r =>
+    `<button type="button" class="btn${r.id===active?' active':''}" data-id="${r.id}">${r.label}</button>`
+  ).join('');
+  box.querySelectorAll('button').forEach(b => b.addEventListener('click', () => applyRange(b.dataset.id)));
+}
+
+async function load() {
+  renderButtons();
+  try {
+    const r = await fetch('./backtest.json');
+    if (!r.ok) {
+      const t = await r.text();
+      document.getElementById('note').innerHTML =
+        `<span class="err">回测缓存不可用（${r.status}）。请先在 box 跑 ticket_runner / 刷新票。</span> ${t.slice(0,200)}`;
+      return;
+    }
+    DATA = await r.json();
+    const fullSpan = yearsSpan(DATA.start, DATA.end);
+    const spanTxt = fullSpan != null ? `（约 ${fullSpan.toFixed(1)} 年）` : '';
+    document.getElementById('sub').textContent =
+      `研究账本本金 ${money(DATA.cash0)} · asof ${DATA.asof} · 样本 ${DATA.start} → ${DATA.end}${spanTxt} · held + 宽度5日斜率门`;
+    const prefer = (DATA.ranges && DATA.ranges['20y']) ? '20y' : 'all';
+    applyRange(prefer);
+  } catch (e) {
+    document.getElementById('note').innerHTML =
+      `<span class="err">加载失败：${e.message}</span>`;
+  }
+}
+load();
+</script>
+</body>
+</html>

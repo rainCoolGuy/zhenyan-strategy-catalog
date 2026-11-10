@@ -1,0 +1,243 @@
+{
+  "asof": "2026-10-23",
+  "mode": "guard",
+  "fresh": true,
+  "n": 1,
+  "equity_book": 172912.80262622976,
+  "capital_display": 10000.0,
+  "env": {
+    "breadth": 0.20236029156542867,
+    "med": -0.04783599078655243,
+    "b_s": 0.23257328753248752,
+    "m_s": -0.04525407049804926,
+    "fast": -0.002934828594786132,
+    "slope5": -0.10359033828492192,
+    "slope_gate_blocks_quality": true,
+    "live_mode": "guard",
+    "live_n": 1,
+    "hard_off": false
+  },
+  "keep": [
+    {
+      "symbol": "600900",
+      "name": "长江电力",
+      "role": "keep",
+      "close": 29.450000762939453,
+      "lot_cost": 2945.0000762939453,
+      "over_capital": false,
+      "capital_display": 10000.0
+    }
+  ],
+  "sell": [],
+  "buy": [
+    {
+      "symbol": "601166",
+      "name": "兴业银行",
+      "role": "buy",
+      "close": 18.3700008392334,
+      "lot_cost": 1837.0000839233398,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "600887",
+      "name": "伊利股份",
+      "role": "buy",
+      "close": 28.190000534057617,
+      "lot_cost": 2819.0000534057617,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "601668",
+      "name": "中国建筑",
+      "role": "buy",
+      "close": 4.5,
+      "lot_cost": 450.0,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "601229",
+      "name": "上海银行",
+      "role": "buy",
+      "close": 9.319999694824219,
+      "lot_cost": 931.9999694824219,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "000858",
+      "name": "五粮液",
+      "role": "buy",
+      "close": 73.86000061035156,
+      "lot_cost": 7386.000061035156,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "600519",
+      "name": "贵州茅台",
+      "role": "buy",
+      "close": 1335.0,
+      "lot_cost": 133500.0,
+      "over_capital": true,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "601985",
+      "name": "中国核电",
+      "role": "buy",
+      "close": 9.34000015258789,
+      "lot_cost": 934.0000152587891,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "601818",
+      "name": "光大银行",
+      "role": "buy",
+      "close": 2.990000009536743,
+      "lot_cost": 299.0000009536743,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "600036",
+      "name": "招商银行",
+      "role": "buy",
+      "close": 41.77000045776367,
+      "lot_cost": 4177.000045776367,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "600015",
+      "name": "华夏银行",
+      "role": "buy",
+      "close": 6.210000038146973,
+      "lot_cost": 621.0000038146973,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "601328",
+      "name": "交通银行",
+      "role": "buy",
+      "close": 8.050000190734863,
+      "lot_cost": 805.0000190734863,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "000538",
+      "name": "云南白药",
+      "role": "buy",
+      "close": 52.400001525878906,
+      "lot_cost": 5240.000152587891,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "601868",
+      "name": "中国能建",
+      "role": "buy",
+      "close": 2.299999952316284,
+      "lot_cost": 229.99999523162842,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "600905",
+      "name": "三峡能源",
+      "role": "buy",
+      "close": 3.3399999141693115,
+      "lot_cost": 333.99999141693115,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "000001",
+      "name": "平安银行",
+      "role": "buy",
+      "close": 11.199999809265137,
+      "lot_cost": 1119.9999809265137,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "000895",
+      "name": "双汇发展",
+      "role": "buy",
+      "close": 23.729999542236328,
+      "lot_cost": 2372.999954223633,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "601186",
+      "name": "中国铁建",
+      "role": "buy",
+      "close": 6.010000228881836,
+      "lot_cost": 601.0000228881836,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "000166",
+      "name": "申万宏源",
+      "role": "buy",
+      "close": 4.360000133514404,
+      "lot_cost": 436.00001335144043,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "601318",
+      "name": "中国平安",
+      "role": "buy",
+      "close": 51.7599983215332,
+      "lot_cost": 5175.99983215332,
+      "over_capital": false,
+      "capital_display": 10000.0
+    },
+    {
+      "symbol": "600674",
+      "name": "川投能源",
+      "role": "buy",
+      "close": 17.219999313354492,
+      "lot_cost": 1721.9999313354492,
+      "over_capital": false,
+      "capital_display": 10000.0
+    }
+  ],
+  "held_now": [
+    {
+      "symbol": "600900",
+      "name": "长江电力",
+      "role": "held",
+      "close": 29.450000762939453,
+      "lot_cost": 2945.0000762939453,
+      "over_capital": false,
+      "capital_display": 10000.0
+    }
+  ],
+  "counts": {
+    "keep": 1,
+    "sell": 0,
+    "buy": 20,
+    "held_now": 1
+  },
+  "note": "信号按 HANDOFF held+斜率门；10000 元超仓位仅告警，不改信号。",
+  "book_end_equity": 172912.80262622976,
+  "elapsed_sec": 14.35,
+  "export_meta": {
+    "exported_at_shanghai": "2026-10-24 20:24:48 Asia/Shanghai",
+    "exported_at_utc": "2026-10-24T12:24:48Z",
+    "source": "cache",
+    "bar_symbols": 21,
+    "bar_limit": 180,
+    "static": true,
+    "note": "GitHub Pages snapshot; live refresh is box uvicorn only."
+  }
+}

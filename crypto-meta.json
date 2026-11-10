@@ -1,0 +1,13 @@
+{
+  "kdf": "PBKDF2",
+  "hash": "SHA-256",
+  "iterations": 600000,
+  "salt": "3/IeE4G5w/oq7Mpslj+vzQ==",
+  "verifier": {
+    "iv": "DXYzQExz1s9bqYnS",
+    "ct": "V6PPCxUk9YZd89xAWeqsL8JaIAo1Ukl3/j7f0Cc4mm5nXYmH2A=="
+  },
+  "verifier_plain": "zhenyan-catalog-ok-v1",
+  "algo": "AES-256-GCM",
+  "note": "Content is encrypted. Password required in browser."
+}

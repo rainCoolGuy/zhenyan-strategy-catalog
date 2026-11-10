@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>held / 斜率门 · 实盘手册</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1419; --panel: #171d25; --border: #2a3441;
+      --text: #e7ecf3; --muted: #8b98a8; --hold: #59c2ff; --chip: #243041; --buy: #3dd68c;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body { font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+    .navbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+      border-bottom: 1px solid var(--border); background: #121820; flex-shrink: 0; }
+    .brand { font-weight: 700; }
+    .brand-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--hold); margin-right: 8px; }
+    .nav-spacer { flex: 1; }
+    .btn, a.btn { background: var(--chip); color: var(--text); border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 13px; text-decoration: none; }
+    .btn:hover, a.btn:hover { border-color: var(--hold); }
+    .btn.active { border-color: var(--hold); color: var(--hold); }
+    .wrap { flex: 1; min-height: 0; overflow: auto; padding: 16px; }
+    .doc { max-width: 860px; margin: 0 auto; background: var(--panel); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px 40px; line-height: 1.65; font-size: 14px; }
+    .doc h1 { font-size: 22px; margin: 0 0 12px; }
+    .doc h2 { font-size: 17px; margin: 28px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    .doc h3 { font-size: 15px; margin: 18px 0 8px; color: var(--hold); }
+    .doc p, .doc li { color: var(--text); }
+    .doc blockquote { margin: 12px 0; padding: 8px 12px; border-left: 3px solid var(--hold);
+      background: #121820; color: var(--muted); }
+    .doc code { background: var(--chip); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+    .doc pre { background: #121820; border: 1px solid var(--border); border-radius: 8px; padding: 12px; overflow-x: auto; }
+    .doc pre code { background: none; padding: 0; }
+    .doc table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 13px; }
+    .doc th, .doc td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }
+    .doc th { background: var(--chip); }
+    .err { color: #f07178; }
+  
+    @media (max-width: 700px) {
+      .navbar { flex-wrap: wrap; gap: 8px; padding: 8px 10px; }
+      .brand { font-size: 14px; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .btn, a.btn { padding: 8px 12px; min-height: 36px; display: inline-flex; align-items: center; }
+      .wrap { padding: 10px; }
+      .panel, .doc { padding: 14px 14px 28px; border-radius: 10px; }
+      .metrics { grid-template-columns: repeat(2, 1fr) !important; }
+      #eq-chart { height: 240px !important; }
+      .doc { font-size: 13px; }
+      .doc table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="brand"><span class="brand-dot"></span>held / 斜率门 · 实盘手册</div>
+    <div class="nav-spacer"></div>
+    <a class="btn" href="index.html">监控</a>
+    <a class="btn" href="backtest.html">回测</a>
+    <a class="btn active" href="playbook.html">手册</a>
+  </nav>
+  <div class="wrap"><article class="doc" id="doc">加载中…</article></div>
+<script>
+async function load() {
+  const el = document.getElementById('doc');
+  try {
+    const r = await fetch('playbook.md');
+    if (!r.ok) throw new Error(r.status + ' ' + r.statusText);
+    const md = await r.text();
+    el.innerHTML = marked.parse(md);
+  } catch (e) {
+    el.innerHTML = '<p class="err">手册加载失败：' + e.message + '</p>';
+  }
+}
+load();
+</script>
+</body>
+</html>

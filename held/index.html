@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>held / 斜率门 · 静态快照</title>
+  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    :root {
+      --bg: #0f1419; --panel: #171d25; --border: #2a3441;
+      --text: #e7ecf3; --muted: #8b98a8; --buy: #3dd68c; --sell: #f07178;
+      --hold: #59c2ff; --warn: #ffcc66; --chip: #243041;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; overflow: hidden; }
+    body { font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg); color: var(--text); display: flex; flex-direction: column; }
+    .banner { background: #1e2a1a; border-bottom: 1px solid #3a5030; color: #c8e6c0;
+      font-size: 12px; padding: 8px 16px; flex-shrink: 0; }
+    .banner code { background: #243041; padding: 1px 6px; border-radius: 4px; }
+    .navbar { display: flex; align-items: center; gap: 16px; padding: 10px 16px;
+      border-bottom: 1px solid var(--border); background: #121820; flex-shrink: 0; z-index: 5; }
+    .brand { font-weight: 700; letter-spacing: 0.02em; }
+    .brand-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--hold); margin-right: 8px; }
+    .nav-metrics { display: flex; flex-wrap: wrap; gap: 10px 14px; font-size: 13px; color: var(--muted); flex: 1; min-width: 0; }
+    .nav-metrics b { color: var(--text); font-weight: 600; }
+    .nav-metrics .up { color: var(--buy); } .nav-metrics .dn { color: var(--sell); }
+    .btn, a.btn { background: var(--chip); color: var(--text); border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 13px; flex-shrink: 0; text-decoration: none; }
+    .btn:hover { border-color: var(--hold); }
+    .btn:disabled { opacity: 0.5; cursor: wait; }
+    .layout { flex: 1; min-height: 0; display: grid; grid-template-columns: 280px 1fr 280px;
+      gap: 12px; padding: 12px; overflow: hidden; }
+    .rail, .main { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+      padding: 12px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+    .rail-stack { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow: hidden;
+      padding: 0; border: none; background: transparent; }
+    .rail-stack > .rail { flex: 1; min-height: 0; }
+    .rail h2 { margin: 0 0 8px; font-size: 15px; display: flex; justify-content: space-between;
+      align-items: center; flex-shrink: 0; }
+
+    .rail-scroll {
+      flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+      scrollbar-width: thin; /* Firefox */
+      scrollbar-color: transparent transparent;
+    }
+    .rail-scroll:hover, .rail-scroll:focus-within {
+      scrollbar-color: rgba(139, 152, 168, 0.35) transparent;
+    }
+    .rail-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .rail-scroll::-webkit-scrollbar-track { background: transparent; }
+    .rail-scroll::-webkit-scrollbar-thumb {
+      background: transparent; border-radius: 999px;
+    }
+    .rail-scroll:hover::-webkit-scrollbar-thumb,
+    .rail-scroll:focus-within::-webkit-scrollbar-thumb {
+      background: rgba(139, 152, 168, 0.35);
+    }
+    .rail-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(139, 152, 168, 0.55);
+    }
+
+    .pill { background: var(--chip); border-radius: 999px; padding: 2px 8px; font-size: 12px; color: var(--muted); }
+    .rail.buy h2 { color: var(--buy); } .rail.hold h2 { color: var(--hold); } .rail.sell h2 { color: var(--sell); }
+    .card { border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 8px;
+      cursor: pointer; transition: border-color .15s, background .15s; }
+    .card:hover, .card.active { border-color: var(--hold); background: #1c2530; }
+    .card .sym { font-weight: 700; font-size: 15px; }
+    .card .name { font-size: 12px; color: var(--muted); margin-top: 2px; font-weight: 500; }
+    .card .meta { font-size: 12px; color: var(--muted); margin-top: 4px; display: flex; justify-content: space-between; gap: 8px; }
+    .warn { color: var(--warn); font-size: 11px; margin-top: 4px; }
+    .empty { color: var(--muted); font-size: 13px; padding: 16px 4px; }
+    .env-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; flex-shrink: 0; }
+    .env-item { background: var(--chip); border-radius: 8px; padding: 8px 10px; }
+    .env-item .lab { font-size: 11px; color: var(--muted); }
+    .env-item .val { font-size: 15px; font-weight: 600; margin-top: 2px; }
+    .chart-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; flex-shrink: 0; gap: 8px; }
+    #chart { flex: 1; min-height: 180px; width: 100%; }
+    .status { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+    .gate-on { color: var(--warn); } .gate-off { color: var(--buy); }
+.card .title { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; min-width: 0; }
+    .card .sym { font-weight: 700; font-size: 15px; flex-shrink: 0; }
+    .card .name { font-size: 12px; color: var(--muted); font-weight: 500; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
+    .nav-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    @media (max-width: 1100px) {
+      html, body { height: auto; min-height: 100%; overflow: auto; }
+      body { display: block; }
+      .navbar { flex-wrap: wrap; gap: 8px 12px; padding: 10px 12px; }
+      .nav-metrics { flex: 1 1 100%; order: 3; font-size: 12px; gap: 6px 12px; }
+      .layout {
+        height: auto; overflow: visible; grid-template-columns: 1fr;
+        gap: 10px; padding: 10px;
+      }
+      .rail, .main, .rail-stack {
+        max-height: none; overflow: visible; height: auto;
+      }
+      .rail-stack { display: flex; flex-direction: column; gap: 10px; }
+      .rail-stack > .rail { max-height: none; flex: none; }
+      .rail-scroll {
+        flex: none; overflow: visible; max-height: none;
+      }
+      #chart { flex: none; height: 300px; min-height: 300px; }
+      .buy { order: 3; }
+      .main { order: 2; }
+      .rail-stack { order: 1; }
+    }
+    @media (max-width: 700px) {
+      .navbar { gap: 8px; padding: 8px 10px; }
+      .brand { font-size: 14px; max-width: 55%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .nav-metrics {
+        flex: 1 1 100%; order: 3; font-size: 11px; line-height: 1.45;
+        gap: 4px 10px; padding-top: 2px;
+      }
+      .nav-actions { margin-left: auto; }
+      .btn, a.btn {
+        padding: 8px 12px; font-size: 13px; min-height: 36px;
+        display: inline-flex; align-items: center; justify-content: center;
+      }
+      .layout { padding: 8px; gap: 8px; }
+      .rail, .main { padding: 10px; border-radius: 10px; }
+      .env-box { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+      .env-item { padding: 7px 8px; }
+      .env-item .val { font-size: 13px; word-break: break-all; }
+      .chart-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+      #chart { height: 260px; min-height: 260px; }
+      .card { padding: 10px 12px; margin-bottom: 8px; }
+      .card .title { gap: 6px; }
+      .card .name { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical; overflow: hidden; }
+      .card .meta { flex-wrap: wrap; }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="banner">静态快照（GitHub Pages）· 信号不会自动刷新 · 实时刷新仍在 box 上 <code>uvicorn :8787</code> · 导出时间见页脚</div>
+  <nav class="navbar">
+    <div class="brand"><span class="brand-dot"></span>held / 斜率门</div>
+    <div class="nav-actions">
+      <a class="btn" href="backtest.html">回测</a>
+      <a class="btn" href="playbook.html">手册</a>
+      <button class="btn" id="btn-refresh" type="button">重载</button>
+    </div>
+    <div class="nav-metrics" id="nav-metrics">加载中…</div>
+  </nav>
+  <div class="layout">
+    <aside class="rail buy" aria-label="买入">
+      <h2>买入 <span class="pill" id="cnt-buy">0</span></h2>
+      <div class="rail-scroll empty" id="list-buy">—</div>
+    </aside>
+    <main class="main">
+      <div class="env-box" id="env-box"></div>
+      <div class="chart-head">
+        <div><strong id="chart-sym">点击左侧/右侧代码查看 K 线</strong>
+          <span class="status" id="chart-sub"></span></div>
+        <div class="status" id="asof-line"></div>
+      </div>
+      <div id="chart"></div>
+      <div class="status" id="export-meta" style="margin-top:8px"></div>
+    </main>
+    <aside class="rail-stack" aria-label="持仓与卖出">
+      <div class="rail hold">
+        <h2>持仓 <span class="pill" id="cnt-keep">0</span></h2>
+        <div class="rail-scroll empty" id="list-keep">—</div>
+      </div>
+      <div class="rail sell">
+        <h2>卖出 <span class="pill" id="cnt-sell">0</span></h2>
+        <div class="rail-scroll empty" id="list-sell">—</div>
+      </div>
+    </aside>
+  </div>
+<script>
+window.__fmtChartDate = function (time) {
+  if (time == null) return '';
+  if (typeof time === 'string') return time.slice(0, 10);
+  if (typeof time === 'object' && time.year != null) {
+    const m = String(time.month).padStart(2, '0');
+    const d = String(time.day).padStart(2, '0');
+    return `${time.year}-${m}-${d}`;
+  }
+  const n = Number(time);
+  if (!Number.isFinite(n)) return String(time);
+  const dt = new Date(n * 1000);
+  const y = dt.getUTCFullYear();
+  const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+  const d = String(dt.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+const chartEl = document.getElementById('chart');
+const chart = LightweightCharts.createChart(chartEl, {
+  layout: { background: { color: '#171d25' }, textColor: '#8b98a8' },
+  grid: { vertLines: { color: '#243041' }, horzLines: { color: '#243041' } },
+  rightPriceScale: { borderColor: '#2a3441' },
+  timeScale: {
+    borderColor: '#2a3441',
+    tickMarkFormatter: (time) => window.__fmtChartDate(time),
+  },
+  localization: {
+    locale: 'zh-CN',
+    dateFormat: 'yyyy-MM-dd',
+    timeFormatter: (time) => window.__fmtChartDate(time),
+  },
+});
+const series = chart.addCandlestickSeries({
+  upColor: '#3dd68c', downColor: '#f07178', borderVisible: false,
+  wickUpColor: '#3dd68c', wickDownColor: '#f07178',
+});
+function resizeChart() {
+  chart.applyOptions({ width: chartEl.clientWidth, height: chartEl.clientHeight || 360 });
+}
+window.addEventListener('resize', resizeChart);
+if (window.ResizeObserver) new ResizeObserver(resizeChart).observe(chartEl);
+resizeChart();
+
+let activeSym = null;
+let ticket = null;
+
+function pct(x, digits=1) {
+  if (x == null || !Number.isFinite(+x)) return '--';
+  return ((+x)*100).toFixed(digits) + '%';
+}
+function num(x, d=2) {
+  if (x == null || !Number.isFinite(+x)) return '--';
+  return (+x).toFixed(d);
+}
+function clsRet(x) {
+  if (x == null || !Number.isFinite(+x)) return '';
+  return +x >= 0 ? 'up' : 'dn';
+}
+
+function renderEnv(t) {
+  const e = t.env || {};
+  const gate = e.slope_gate_blocks_quality;
+  const items = [
+    ['asof', t.asof || '--'],
+    ['评分', t.mode || '--'],
+    ['目标只数', t.n ?? '--'],
+    ['宽度', pct(e.breadth)],
+    ['宽度平滑 b_s', pct(e.b_s)],
+    ['中位 med', pct(e.med)],
+    ['fast(5日)', pct(e.fast, 2)],
+    ['斜率门 Δb_s(5)', pct(e.slope5, 2)],
+    ['斜率门', gate ? '拦截 quality→guard' : '放行'],
+  ];
+  document.getElementById('env-box').innerHTML = items.map(([lab, val]) => {
+    let extra = '';
+    if (lab === '斜率门') extra = gate ? 'gate-on' : 'gate-off';
+    return `<div class="env-item"><div class="lab">${lab}</div><div class="val ${extra}">${val}</div></div>`;
+  }).join('');
+  document.getElementById('asof-line').textContent =
+    `账本权益 ${num(t.book_end_equity, 0)} · 展示本金 ${t.capital_display || 2000}（仅告警）`;
+  document.getElementById('nav-metrics').innerHTML = [
+    `<span>asof <b>${t.asof || '--'}</b></span>`,
+    `<span>模式 <b>${t.mode || '--'}</b></span>`,
+    `<span>宽度 <b class="${clsRet(e.breadth-0.5)}">${pct(e.breadth)}</b></span>`,
+    `<span>fast <b class="${clsRet(e.fast)}">${pct(e.fast,2)}</b></span>`,
+    `<span>斜率门 <b class="${gate?'dn':'up'}">${gate?'拦':'放'}</b></span>`,
+    `<span>持仓/买/卖 <b>${t.counts?.keep??0}/${t.counts?.buy??0}/${t.counts?.sell??0}</b></span>`,
+  ].join('');
+  const meta = t.export_meta || {};
+  document.getElementById('export-meta').textContent =
+    `导出 ${meta.exported_at_shanghai || '--'} · bars ${meta.bar_symbols ?? '--'} 只 · 源 ${meta.source || 'cache'}`;
+}
+
+function renderList(elId, cntId, rows) {
+  const el = document.getElementById(elId);
+  document.getElementById(cntId).textContent = String(rows?.length || 0);
+  if (!rows || !rows.length) { el.className = 'rail-scroll empty'; el.textContent = '无'; return; }
+  el.className = 'rail-scroll';
+  el.innerHTML = rows.map(r => {
+    const warn = r.over_capital
+      ? `<div class="warn">一手约 ${num(r.lot_cost,0)} 元 &gt; 展示本金 ${r.capital_display}</div>` : '';
+    const name = (r.name || '').trim();
+    return `<div class="card${activeSym===r.symbol?' active':''}" data-sym="${r.symbol}" data-name="${name}">
+      <div class="title"><span class="sym">${r.symbol}</span>${name ? `<span class="name">${name}</span>` : ''}</div>
+      <div class="meta"><span>收盘 ${num(r.close)}</span><span>一手 ${num(r.lot_cost,0)}</span></div>
+      ${warn}
+    </div>`;
+  }).join('');
+  el.querySelectorAll('.card').forEach(c => c.addEventListener('click', () => selectSym(c.dataset.sym)));
+}
+
+function labelFor(sym) {
+  const row = [...(ticket?.keep||[]), ...(ticket?.buy||[]), ...(ticket?.sell||[]), ...(ticket?.held_now||[])]
+    .find(r => r.symbol === sym);
+  const name = (row && row.name) ? String(row.name).trim() : '';
+  return name ? `${sym} ${name}` : sym;
+}
+
+async function selectSym(sym) {
+  activeSym = sym;
+  document.querySelectorAll('.card').forEach(c => c.classList.toggle('active', c.dataset.sym === sym));
+  document.getElementById('chart-sym').textContent = labelFor(sym);
+  document.getElementById('chart-sub').textContent = ' 加载中…';
+  try {
+    const r = await fetch('./bars/' + sym + '.json');
+    if (!r.ok) { document.getElementById('chart-sub').textContent = ' 无数据'; return; }
+    const data = await r.json();
+    const bars = (data.bars || []).map(b => ({
+      time: b.date, open: b.open, high: b.high, low: b.low, close: b.close,
+    }));
+    series.setData(bars);
+    chart.timeScale().fitContent();
+    document.getElementById('chart-sub').textContent = ` · ${bars.length} 根`;
+  } catch (e) {
+    document.getElementById('chart-sub').textContent = ' 加载失败';
+  }
+}
+
+function renderAll(t) {
+  ticket = t;
+  renderEnv(t);
+  renderList('list-buy', 'cnt-buy', t.buy);
+  renderList('list-keep', 'cnt-keep', t.keep);
+  renderList('list-sell', 'cnt-sell', t.sell);
+  const first = (t.keep && t.keep[0]) || (t.buy && t.buy[0]) || (t.sell && t.sell[0]);
+  if (first) selectSym(first.symbol);
+}
+
+async function loadTicket() {
+  const btn = document.getElementById('btn-refresh');
+  btn.disabled = true; btn.textContent = '加载中…';
+  try {
+    const r = await fetch('./ticket.json?t=' + Date.now());
+    const t = await r.json();
+    if (!r.ok) throw new Error(t.detail || r.statusText);
+    renderAll(t);
+  } catch (e) {
+    document.getElementById('nav-metrics').textContent = '错误: ' + e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = '重新加载快照';
+  }
+}
+
+document.getElementById('btn-refresh').addEventListener('click', () => loadTicket());
+loadTicket();
+</script>
+</body>
+</html>
