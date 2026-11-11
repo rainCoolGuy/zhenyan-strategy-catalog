@@ -237,6 +237,31 @@ html[data-theme="dark"] .pill-soft { background: #2a2114; color: #ffc56e; }
 .hero .sub, .hero .params { color: var(--muted); font-size: 13px; margin: 8px 0 0; line-height: 1.5; }
 .hero .warn { margin: 10px 0 0; font-size: 13px; line-height: 1.55; }
 
+/* Homepage: list fills remaining viewport so its scrollbar stays on screen. */
+html:has(#catalog-table),
+html:has(#catalog-table) body {
+  height: 100%;
+}
+html:has(#catalog-table) body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+html:has(#catalog-table) .navbar {
+  flex: 0 0 auto;
+}
+html:has(#catalog-table) .page {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 16px;
+}
+html:has(#catalog-table) .market-bar,
+html:has(#catalog-table) .filter-bar {
+  flex: 0 0 auto;
+}
+
 /* Tables */
 .table-wrap {
   overflow: auto;
@@ -244,6 +269,17 @@ html[data-theme="dark"] .pill-soft { background: #2a2114; color: #ffc56e; }
   border-radius: 12px;
   border: 1px solid var(--border);
   background: var(--panel);
+}
+html:has(#catalog-table) .table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  overflow: auto;
+}
+html:has(#catalog-table) .card-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
 }
 .table-wrap table, .card table, .panel table {
   border-collapse: collapse; width: 100%;
