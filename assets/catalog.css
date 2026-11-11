@@ -226,7 +226,7 @@ html[data-theme="dark"] .pill-soft { background: #2a2114; color: #ffc56e; }
 .table-wrap table, .card table, .panel table {
   border-collapse: collapse; width: 100%;
 }
-#catalog-table { min-width: 1100px; }
+#catalog-table { min-width: 1240px; }
 th, td {
   border-bottom: 1px solid var(--border);
   padding: 0.5rem 0.6rem;
@@ -250,6 +250,35 @@ tbody tr:hover { background: var(--card-hover); }
 tbody tr[hidden], .row-card[hidden] { display: none !important; }
 .card table { margin: 0.5rem 0 0; }
 .card th { position: static; box-shadow: none; }
+
+
+/* Homepage equity-curve thumbnails */
+td.eq-thumb-cell {
+  vertical-align: middle;
+  width: 128px;
+  min-width: 128px;
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+.eq-thumb {
+  display: block;
+  width: 120px;
+  height: 40px;
+  overflow: visible;
+}
+.eq-thumb-empty {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.card-eq {
+  margin-top: 8px;
+}
+.card-eq .eq-thumb {
+  width: 100%;
+  max-width: 240px;
+  height: 40px;
+}
 
 /* Mobile row cards */
 .card-list { display: none; gap: 10px; }
