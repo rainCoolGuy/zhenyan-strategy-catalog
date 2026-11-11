@@ -166,6 +166,28 @@ code, .mono, .readme-pre {
 }
 .lede + .lede { margin-top: -0.25rem; }
 
+/* Market switcher — same .seg language as the status filter; not a mixed table. */
+.market-bar {
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap; margin: 4px 0 14px;
+}
+.market-bar .seg button { padding: 8px 16px; }
+.seg-count {
+  margin-left: 6px; color: var(--muted); font-weight: 500;
+}
+.seg button.active .seg-count { color: var(--text); font-weight: 600; }
+.pill-market {
+  background: var(--chip); color: var(--text); border-color: var(--border);
+  font-weight: 600;
+}
+
+/* Pre-paint isolation: only the active market is visible. No interleaved view. */
+html[data-market="A股"] [data-row][data-market]:not([data-market="A股"]),
+html[data-market="美股"] [data-row][data-market]:not([data-market="美股"]),
+html[data-market="加密"] [data-row][data-market]:not([data-market="加密"]) {
+  display: none !important;
+}
+
 /* Pills */
 .pill {
   display: inline-flex; align-items: center;
@@ -412,6 +434,9 @@ section h2 { font-size: 1rem; margin: 1.4rem 0 0.6rem; }
   .seg button { padding: 8px 10px; font-size: 12px; }
   .seg button[data-short] { font-size: 0; }
   .seg button[data-short]::before { content: attr(data-short); font-size: 12px; }
+  .market-bar { margin: 0 0 12px; }
+  .market-bar .seg { width: 100%; }
+  .market-bar .seg button { flex: 1; padding: 8px 8px; }
   .search { width: 100%; min-width: 0; }
   .nav-actions { width: 100%; }
   .desktop-only { display: none !important; }
